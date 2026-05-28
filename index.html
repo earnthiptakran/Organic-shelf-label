@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shelf Label — The Organic Yard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.5/JsBarcode.all.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #6B7C45;
+  --green-dark: #2A5C1E;
+  --green-light: #EFF4E8;
+  --green-mid: #8FA05A;
+  --green-pale: #F5F9EF;
+  --cream: #FAF8F2;
+  --border: #D4E2C0;
+  --text: #1C2016;
+  --muted: #7A8568;
+  --red: #C0392B;
+  --shadow-sm: 0 1px 4px rgba(42,92,30,0.08);
+  --shadow: 0 4px 16px rgba(42,92,30,0.12);
+  --shadow-lg: 0 8px 32px rgba(42,92,30,0.16);
+  --r: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sarabun',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+
+/* ── HEADER ── */
+header{
+  background:linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+  padding:0 32px;height:64px;display:flex;align-items:center;gap:16px;
+  box-shadow:0 2px 12px rgba(0,0,0,0.2);position:sticky;top:0;z-index:100;
+}
+.h-logo{width:40px;height:40px;background:rgba(255,255,255,0.15);border:2px solid rgba(255,255,255,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;backdrop-filter:blur(4px)}
+.h-title{font-family:'Playfair Display',serif;color:#fff;font-size:1.2rem;letter-spacing:0.3px}
+.h-sub{color:rgba(221,238,204,0.9);font-size:0.72rem;margin-top:1px}
+.h-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.badge-count{background:rgba(255,255,255,0.2);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:20px;padding:4px 12px;font-size:0.78rem;font-weight:600}
+
+/* ── LAYOUT ── */
+.page{max-width:1100px;margin:0 auto;padding:24px 20px 80px;display:grid;grid-template-columns:1fr 380px;gap:22px;align-items:start}
+
+/* ── CARD ── */
+.card{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.ch{background:var(--green-light);padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.ch h2{font-size:0.88rem;font-weight:700;color:var(--green-dark)}
+.cb{padding:18px}
+
+/* ── TABS ── */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px}
+.tab{padding:8px 16px;font-family:'Sarabun',sans-serif;font-size:0.83rem;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all .15s}
+.tab.on{color:var(--green-dark);border-bottom-color:var(--green)}
+
+/* ── FORM ── */
+.fg{margin-bottom:13px}
+label{display:block;font-size:0.75rem;font-weight:700;color:var(--green-dark);margin-bottom:4px;letter-spacing:0.3px;text-transform:uppercase}
+input,textarea,select{width:100%;border:1.5px solid var(--border);border-radius:7px;padding:9px 12px;font-family:'Sarabun',sans-serif;font-size:0.9rem;color:var(--text);background:#fff;outline:none;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(107,124,69,.12)}
+textarea{resize:vertical;min-height:90px;line-height:1.5}
+.r2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.r3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+
+/* ── HINT BOX ── */
+.hint{background:var(--green-pale);border:1px solid var(--border);border-radius:7px;padding:10px 14px;font-size:0.77rem;color:var(--green-dark);line-height:1.7;margin-bottom:13px}
+.hint code{background:rgba(107,124,69,.15);padding:1px 5px;border-radius:3px;font-family:monospace;font-size:0.72rem}
+
+/* ── SMART PARSE ── */
+.ai-box{border:1.5px dashed var(--green-mid);border-radius:8px;padding:14px;background:linear-gradient(135deg,var(--green-pale),#fff);margin-bottom:13px}
+.ai-label{font-size:0.72rem;font-weight:700;color:var(--green-dark);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.ai-label span{background:var(--green);color:#fff;border-radius:10px;padding:1px 7px;font-size:0.65rem}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:7px;font-family:'Sarabun',sans-serif;font-weight:700;cursor:pointer;transition:all .18s;white-space:nowrap}
+.btn-p{background:var(--green);color:#fff;padding:10px 20px;font-size:0.88rem}
+.btn-p:hover{background:var(--green-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(42,92,30,.25)}
+.btn-s{background:var(--green-light);color:var(--green-dark);border:1.5px solid var(--border);padding:8px 14px;font-size:0.82rem}
+.btn-s:hover{background:#e0ecd0}
+.btn-gen{background:linear-gradient(135deg,var(--green),var(--green-dark));color:#fff;padding:14px 24px;font-size:1rem;width:100%;border-radius:9px;box-shadow:0 4px 16px rgba(42,92,30,.28)}
+.btn-gen:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 22px rgba(42,92,30,.38)}
+.btn-gen:disabled{opacity:.55;cursor:not-allowed}
+.btn-row{display:flex;gap:8px;margin-top:6px}
+.btn-full{width:100%}
+.btn-danger{background:#fff0f0;color:var(--red);border:1.5px solid #f5c0c0;padding:7px 12px;font-size:0.8rem}
+.btn-danger:hover{background:#ffe0e0}
+
+/* ── PRODUCT LIST ── */
+.plist{max-height:420px;overflow-y:auto;margin:-18px;padding:12px}
+.pitem{display:flex;align-items:center;gap:10px;background:var(--green-pale);border:1px solid var(--border);border-radius:8px;padding:10px 13px;margin-bottom:7px;animation:pop .2s ease}
+.pitem:last-child{margin-bottom:0}
+@keyframes pop{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:translateY(0)}}
+.pi-num{width:24px;height:24px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:700;flex-shrink:0}
+.pi-info{flex:1;min-width:0}
+.pi-name{font-weight:700;font-size:0.87rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-meta{font-size:0.72rem;color:var(--muted);margin-top:1px}
+.pi-price{font-weight:700;color:var(--green-dark);font-size:0.95rem;white-space:nowrap}
+.pi-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:4px;border-radius:50%;transition:all .15s;line-height:1}
+.pi-del:hover{background:#ffeeee;color:var(--red)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .ei{font-size:2.5rem;margin-bottom:8px;opacity:.5}
+
+/* ── PREVIEW LABEL ── */
+.prev-wrap{border:1.5px solid var(--border);border-radius:9px;overflow:hidden;box-shadow:var(--shadow);margin-bottom:14px;aspect-ratio:2/1;display:flex;flex-direction:column;background:#fff}
+.pl-top{background:var(--green);padding:7px 9px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pl-logo{width:18px;height:18px;background:rgba(255,255,255,0.2);border:1.5px solid rgba(255,255,255,0.4);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px}
+.pl-store{color:#fff;font-size:7.5px;font-weight:700;line-height:1.3}
+.pl-sub{color:rgba(221,238,204,.9);font-size:6px}
+.pl-body{flex:1;padding:5px 9px 0;display:flex;flex-direction:column;gap:2px}
+.pl-name{font-size:8.5px;font-weight:700;border-bottom:1px solid #eee;padding-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pl-price-row{display:flex;align-items:center;justify-content:space-between;flex:1;align-items:center}
+.pl-num{font-size:20px;font-weight:700;color:#111;line-height:1}
+.pl-thb{background:var(--green);color:#fff;font-size:6px;font-weight:700;padding:2px 6px;border-radius:3px}
+.pl-bc{height:20px;background:#f8f8f8;display:flex;align-items:center;justify-content:center;border-top:1px solid #eee}
+.pl-bc-txt{font-size:5px;color:#bbb;font-family:monospace}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat{background:var(--green-light);border:1px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center}
+.stat-n{font-size:1.5rem;font-weight:700;color:var(--green-dark);line-height:1}
+.stat-l{font-size:0.68rem;color:var(--muted);margin-top:2px}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin:10px 0;display:none}
+.prog-bar{height:5px;background:var(--border);border-radius:4px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--green-mid));border-radius:4px;transition:width .3s;width:0%}
+.prog-txt{font-size:0.75rem;color:var(--muted);text-align:center;margin-top:5px}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--green-dark);color:#fff;padding:10px 22px;border-radius:20px;font-family:'Sarabun',sans-serif;font-size:0.88rem;font-weight:600;z-index:999;box-shadow:var(--shadow-lg);opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── SUCCESS ── */
+.success{display:none;background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:11px 15px;color:#2e7d32;font-size:0.83rem;font-weight:600;align-items:center;gap:7px;margin-top:10px}
+
+canvas{display:none}
+@media(max-width:760px){.page{grid-template-columns:1fr}.r2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-logo">🌿</div>
+  <div>
+    <div class="h-title">Shelf Label Generator</div>
+    <div class="h-sub">The Organic Yard by Mahasuk Farm</div>
+  </div>
+  <div class="h-right">
+    <div class="badge-count" id="hdr-count">0 รายการ</div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- ═══ LEFT COLUMN ═══ -->
+  <div>
+
+    <!-- CARD: เพิ่มสินค้า -->
+    <div class="card">
+      <div class="ch"><span>📦</span><h2>เพิ่มสินค้า</h2></div>
+      <div class="cb">
+        <div class="tabs">
+          <button class="tab on" onclick="switchTab('single',this)">➕ ทีละรายการ</button>
+          <button class="tab" onclick="switchTab('batch',this)">📋 หลายรายการ</button>
+          <button class="tab" onclick="switchTab('smart',this)">✨ Smart Import</button>
+        </div>
+
+        <!-- SINGLE -->
+        <div id="t-single">
+          <div class="fg">
+            <label>ชื่อสินค้า *</label>
+            <input id="s-name" type="text" placeholder="เช่น Lumlum - งาดำออร์แกนิค" />
+          </div>
+          <div class="r2">
+            <div class="fg">
+              <label>ราคา (บาท) *</label>
+              <input id="s-price" type="number" placeholder="109" min="0" step="0.5"/>
+            </div>
+            <div class="fg">
+              <label>บาร์โค้ด</label>
+              <input id="s-bc" type="text" placeholder="8859060300290"/>
+            </div>
+          </div>
+          <button class="btn btn-p btn-full" onclick="addSingle()">➕ เพิ่มรายการ</button>
+        </div>
+
+        <!-- BATCH -->
+        <div id="t-batch" style="display:none">
+          <div class="hint">
+            วางข้อมูลได้หลายรูปแบบ แต่ละรายการคั่นด้วยบรรทัดว่าง:<br>
+            <code>ชื่อสินค้า [TAB] บาร์โค้ด [TAB] ราคา</code><br>
+            <code>ชื่อสินค้า [TAB] ราคา [TAB] บาร์โค้ด</code><br>
+            <code>ชื่อสินค้า [TAB] ราคา</code> (ไม่มีบาร์โค้ด)
+          </div>
+          <div class="fg">
+            <label>วางข้อมูลที่นี่</label>
+            <textarea id="b-data" placeholder="Lumlum - งาดำออร์แกนิค&#9;8859060300290&#9;109&#10;Yorice - ข้าวสามกษัตริย์&#9;8859273800129&#9;105&#10;Nature Touch - Coffee Scrub&#9;88590000008283&#9;98"></textarea>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-p" style="flex:1" onclick="addBatch()">📋 นำเข้าทั้งหมด</button>
+            <button class="btn btn-s" onclick="document.getElementById('b-data').value=''">ล้าง</button>
+          </div>
+        </div>
+
+        <!-- SMART -->
+        <div id="t-smart" style="display:none">
+          <div class="ai-box">
+            <div class="ai-label">✨ Smart Import <span>AI</span></div>
+            <div style="font-size:0.78rem;color:var(--muted);line-height:1.6">
+              วางข้อมูลในรูปแบบใดก็ได้ — AI จะอ่านและแยกชื่อ/ราคา/บาร์โค้ดให้อัตโนมัติ
+            </div>
+          </div>
+          <div class="fg">
+            <label>วางข้อมูลดิบ (ทุกรูปแบบ)</label>
+            <textarea id="ai-data" placeholder="Nature Touch - Coffee Scrub  88590000008283  ราคา 98 บาท&#10;&#10;Kojo Plant-based Banana 350g  ราคา 1,290 บาท  บาร์โค้ด 8859510307916&#10;&#10;Lumlum งาดำออร์แกนิค 109 บาท 8859060300290" style="min-height:120px"></textarea>
+          </div>
+          <button class="btn btn-p btn-full" id="ai-btn" onclick="smartImport()">✨ วิเคราะห์อัตโนมัติ</button>
+          <div id="ai-status" style="font-size:0.78rem;color:var(--muted);margin-top:8px;text-align:center;display:none">⏳ กำลังวิเคราะห์...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARD: รายการสินค้า -->
+    <div class="card">
+      <div class="ch">
+        <span>🏷️</span>
+        <h2>รายการสินค้าทั้งหมด (<span id="cnt">0</span>)</h2>
+        <button class="btn btn-danger" style="margin-left:auto" onclick="clearAll()">🗑 ล้างทั้งหมด</button>
+      </div>
+      <div class="plist" id="plist">
+        <div class="empty-state"><div class="ei">🌿</div><div>ยังไม่มีรายการ<br><span style="font-size:0.78rem">เพิ่มสินค้าเพื่อเริ่มต้นใช้งาน</span></div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ═══ RIGHT COLUMN ═══ -->
+  <div style="position:sticky;top:80px">
+
+    <!-- PREVIEW -->
+    <div class="card">
+      <div class="ch"><span>👁️</span><h2>ตัวอย่าง Label (70×35mm)</h2></div>
+      <div class="cb">
+        <div class="prev-wrap">
+          <div class="pl-top">
+            <div class="pl-logo">🌿</div>
+            <div><div class="pl-store" id="pv-store">The Organic Yard</div><div class="pl-sub" id="pv-sub">by Mahasuk Farm</div></div>
+          </div>
+          <div class="pl-body">
+            <div class="pl-name" id="pv-name">ชื่อสินค้า</div>
+            <div class="pl-price-row">
+              <div class="pl-num" id="pv-price">—</div>
+              <div class="pl-thb">THB</div>
+            </div>
+          </div>
+          <div class="pl-bc"><div class="pl-bc-txt" id="pv-bc">barcode</div></div>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="stat-n" id="st-items">0</div><div class="stat-l">รายการ</div></div>
+          <div class="stat"><div class="stat-n" id="st-pages">0</div><div class="stat-l">หน้า A4</div></div>
+          <div class="stat"><div class="stat-n" id="st-bc">0</div><div class="stat-l">มีบาร์โค้ด</div></div>
+        </div>
+
+        <div class="prog-wrap" id="prog-wrap">
+          <div class="prog-bar"><div class="prog-fill" id="prog-fill"></div></div>
+          <div class="prog-txt" id="prog-txt">กำลังสร้าง PDF...</div>
+        </div>
+
+        <button class="btn btn-gen" id="btn-gen" onclick="genPDF()" disabled>⬇️ Download PDF</button>
+        <div class="success" id="success">✅ PDF พร้อมแล้ว! กำลัง download...</div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="card">
+      <div class="ch"><span>⚙️</span><h2>ตั้งค่า</h2></div>
+      <div class="cb">
+        <div class="r2">
+          <div class="fg">
+            <label>ชื่อร้าน (หลัก)</label>
+            <input id="cfg-s1" value="The Organic Yard" oninput="updatePreview()"/>
+          </div>
+          <div class="fg">
+            <label>ชื่อร้าน (รอง)</label>
+            <input id="cfg-s2" value="by Mahasuk Farm" oninput="updatePreview()"/>
+          </div>
+        </div>
+        <div class="r2">
+          <div class="fg">
+            <label>กว้าง (mm)</label>
+            <input id="cfg-w" type="number" value="70" min="40" max="150"/>
+          </div>
+          <div class="fg">
+            <label>สูง (mm)</label>
+            <input id="cfg-h" type="number" value="35" min="20" max="80"/>
+          </div>
+        </div>
+        <div class="fg">
+          <label>ชื่อไฟล์ PDF</label>
+          <input id="cfg-fname" value="shelf_labels"/>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<canvas id="bc-cv"></canvas>
+<div id="toast"></div>
+
+<script>
+const { jsPDF } = window.jspdf;
+let products = [];
+
+/* ── TABS ── */
+function switchTab(id, el) {
+  ['single','batch','smart'].forEach(t => {
+    document.getElementById('t-'+t).style.display = t===id?'block':'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  el.classList.add('on');
+}
+
+/* ── ADD SINGLE ── */
+function addSingle() {
+  const name = document.getElementById('s-name').value.trim();
+  const price = parseFloat(document.getElementById('s-price').value);
+  const bc = document.getElementById('s-bc').value.trim();
+  if (!name) return toast('⚠️ กรุณากรอกชื่อสินค้า');
+  if (isNaN(price) || price < 0) return toast('⚠️ กรุณากรอกราคา');
+  products.push({name, price, bc});
+  document.getElementById('s-name').value='';
+  document.getElementById('s-price').value='';
+  document.getElementById('s-bc').value='';
+  document.getElementById('s-name').focus();
+  refresh();
+  toast(`✅ เพิ่ม "${name}" แล้ว`);
+}
+
+/* ── ADD BATCH ── */
+function addBatch() {
+  const raw = document.getElementById('b-data').value.trim();
+  if (!raw) return;
+  const lines = raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  let added=0;
+  lines.forEach(line => {
+    const parts = line.split(/\t+/).map(p=>p.trim()).filter(p=>p);
+    if (parts.length < 2) return;
+    let name='', bc='', price=NaN;
+    parts.forEach(p => {
+      if (/^\d{6,}$/.test(p)) bc=p;
+      else if (/^\d+(\.\d+)?$/.test(p)) price=parseFloat(p);
+      else name = name ? name+' '+p : p;
+    });
+    if (name && !isNaN(price)) {
+      products.push({name:name.trim(), price, bc});
+      added++;
+    }
+  });
+  if (added>0) {
+    document.getElementById('b-data').value='';
+    refresh();
+    toast(`✅ เพิ่ม ${added} รายการแล้ว`);
+  } else toast('⚠️ ไม่พบข้อมูลที่ถูกต้อง');
+}
+
+/* ── SMART IMPORT via Claude API ── */
+async function smartImport() {
+  const raw = document.getElementById('ai-data').value.trim();
+  if (!raw) return toast('⚠️ กรุณาวางข้อมูลก่อน');
+  const btn = document.getElementById('ai-btn');
+  const status = document.getElementById('ai-status');
+  btn.disabled=true; btn.textContent='⏳ กำลังวิเคราะห์...'; status.style.display='block';
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a data parser for a retail shelf label system. Extract product information from messy input and return ONLY valid JSON array. No explanation, no markdown, just raw JSON.
+
+Format: [{"name":"product name","price":number,"bc":"barcode or empty string"}]
+
+Rules:
+- name: full product name as given, keep Thai text as-is
+- price: number only (no currency symbols)  
+- bc: barcode digits only, empty string if none
+- If price is missing, use 0
+- Remove duplicate entries`,
+        messages: [{role:'user', content:`Parse this product data into JSON:\n\n${raw}`}]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error');
+    }
+
+    const data = await res.json();
+    const text = data.content.map(c=>c.text||'').join('');
+    const clean = text.replace(/```json?|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+
+    if (!Array.isArray(parsed) || parsed.length===0) throw new Error('ไม่พบข้อมูล');
+
+    parsed.forEach(p => {
+      if (p.name && p.price >= 0) {
+        products.push({name:p.name, price:parseFloat(p.price)||0, bc:p.bc||''});
+      }
+    });
+
+    document.getElementById('ai-data').value='';
+    refresh();
+    toast(`✅ AI วิเคราะห์ได้ ${parsed.length} รายการ`);
+
+  } catch(e) {
+    console.error(e);
+    toast(`❌ ${e.message}`);
+  } finally {
+    btn.disabled=false; btn.textContent='✨ วิเคราะห์อัตโนมัติ';
+    status.style.display='none';
+  }
+}
+
+/* ── REMOVE / CLEAR ── */
+function remove(i) { products.splice(i,1); refresh(); }
+function clearAll() {
+  if (products.length && !confirm(`ล้าง ${products.length} รายการทั้งหมด?`)) return;
+  products=[]; refresh();
+}
+
+/* ── REFRESH UI ── */
+function refresh() {
+  const n = products.length;
+  document.getElementById('cnt').textContent = n;
+  document.getElementById('hdr-count').textContent = n + ' รายการ';
+  document.getElementById('st-items').textContent = n;
+  document.getElementById('st-pages').textContent = n>0?Math.ceil(n/14):0;
+  document.getElementById('st-bc').textContent = products.filter(p=>p.bc).length;
+  document.getElementById('btn-gen').disabled = n===0;
+
+  const list = document.getElementById('plist');
+  if (n===0) {
+    list.innerHTML='<div class="empty-state"><div class="ei">🌿</div><div>ยังไม่มีรายการ<br><span style="font-size:.78rem">เพิ่มสินค้าเพื่อเริ่มต้นใช้งาน</span></div></div>';
+    updatePreview({name:'ชื่อสินค้า',price:null,bc:''});
+    return;
+  }
+
+  list.innerHTML = products.map((p,i)=>`
+    <div class="pitem">
+      <div class="pi-num">${i+1}</div>
+      <div class="pi-info">
+        <div class="pi-name">${esc(p.name)}</div>
+        <div class="pi-meta">${p.bc||'ไม่มีบาร์โค้ด'}</div>
+      </div>
+      <div class="pi-price">฿${p.price.toLocaleString()}</div>
+      <button class="pi-del" onclick="remove(${i})">✕</button>
+    </div>`).join('');
+
+  updatePreview(products[products.length-1]);
+}
+
+function updatePreview(p) {
+  const last = p || (products.length ? products[products.length-1] : null);
+  document.getElementById('pv-store').textContent = document.getElementById('cfg-s1').value;
+  document.getElementById('pv-sub').textContent = document.getElementById('cfg-s2').value;
+  if (last) {
+    document.getElementById('pv-name').textContent = last.name;
+    document.getElementById('pv-price').textContent = last.price!=null ? last.price.toLocaleString() : '—';
+    document.getElementById('pv-bc').textContent = last.bc || 'No barcode';
+  }
+}
+
+/* ── BARCODE ── */
+function getBCImg(code) {
+  if (!code||code.length<6) return null;
+  try {
+    const cv = document.getElementById('bc-cv');
+    JsBarcode(cv, code, {format:'CODE128',width:1.5,height:40,displayValue:false,margin:0});
+    return cv.toDataURL('image/png');
+  } catch(e) { return null; }
+}
+
+/* ── GENERATE PDF ── */
+async function genPDF() {
+  if (!products.length) return;
+  const btn = document.getElementById('btn-gen');
+  const pw = document.getElementById('prog-wrap');
+  const pf = document.getElementById('prog-fill');
+  const pt = document.getElementById('prog-txt');
+  const suc = document.getElementById('success');
+
+  btn.disabled=true; btn.textContent='⏳ กำลังสร้าง...';
+  pw.style.display='block'; suc.style.display='none';
+
+  const LW = parseFloat(document.getElementById('cfg-w').value)||70;
+  const LH = parseFloat(document.getElementById('cfg-h').value)||35;
+  const S1 = document.getElementById('cfg-s1').value;
+  const S2 = document.getElementById('cfg-s2').value;
+  const FNAME = (document.getElementById('cfg-fname').value||'shelf_labels').replace(/[^a-zA-Z0-9_-]/g,'_');
+
+  const PW=210,PH=297,MX=10,MY=10;
+  const COLS=Math.floor((PW-2*MX)/LW);
+  const ROWS=Math.floor((PH-2*MY)/LH);
+  const PPG=COLS*ROWS;
+
+  const doc=new jsPDF({unit:'mm',format:'a4'});
+  const G=[107,124,69],GD=[42,92,30],W=[255,255,255],D=[17,17,17],DIV=[213,213,213];
+  const PAD=1.5,LH_Z=8,NH_Z=9,PH_Z=10;
+  const BCH_Z=LH-LH_Z-NH_Z-PH_Z;
+
+  for(let idx=0;idx<products.length;idx++){
+    pf.style.width=(idx/products.length*100)+'%';
+    pt.textContent=`กำลังสร้าง ${idx+1}/${products.length}...`;
+    await new Promise(r=>setTimeout(r,0));
+
+    const p=products[idx];
+    const pos=idx%PPG;
+    const col=pos%COLS;
+    const row=Math.floor(pos/COLS);
+    if(pos===0&&idx>0) doc.addPage();
+
+    const lx=MX+col*LW, ly=MY+row*LH;
+
+    // Border
+    doc.setDrawColor(200,210,185);doc.setLineWidth(0.3);
+    doc.rect(lx,ly,LW,LH);
+
+    // Logo strip
+    doc.setFillColor(...G);doc.rect(lx,ly,LW,LH_Z,'F');
+    doc.setTextColor(...W);
+    doc.setFont('helvetica','bold');doc.setFontSize(5.5);
+    doc.text(S1,lx+PAD+7,ly+LH_Z*0.62);
+    doc.setFont('helvetica','normal');doc.setFontSize(4.5);
+    doc.setTextColor(221,238,204);
+    doc.text(S2,lx+PAD+7,ly+LH_Z*0.88);
+
+    // Name zone
+    const ny=ly+LH_Z;
+    doc.setTextColor(...D);doc.setFont('helvetica','bold');
+    const maxW=LW-2*PAD;
+    let fz=7.5;
+    const words=p.name.split(' ');
+    let lines=[],cur='';
+    doc.setFontSize(fz);
+    words.forEach(w=>{
+      const t=cur?cur+' '+w:w;
+      if(doc.getTextWidth(t)<=maxW) cur=t;
+      else{if(cur)lines.push(cur);cur=w;}
+    });
+    if(cur)lines.push(cur);
+    lines=lines.slice(0,2);
+    const nc=ny+NH_Z/2;
+    const th=lines.length*(fz*0.38);
+    let sy=nc-th/2+fz*0.35;
+    doc.setFontSize(fz);
+    lines.forEach((l,i)=>doc.text(l,lx+PAD,sy+i*(fz*0.38+0.8)));
+    doc.setDrawColor(...DIV);doc.setLineWidth(0.2);
+    doc.line(lx+PAD,ny+NH_Z,lx+LW-PAD,ny+NH_Z);
+
+    // Price zone
+    const py=ny+NH_Z;
+    const pc=py+PH_Z/2;
+    const pstr=p.price.toLocaleString();
+    const BW=13,BH=6;
+    const bx=lx+LW-PAD-BW,by=pc-BH/2;
+    let pfz=18;
+    doc.setFontSize(pfz);
+    while(doc.getTextWidth(pstr)>LW-BW-2*PAD-3&&pfz>11){pfz--;doc.setFontSize(pfz);}
+    doc.setTextColor(...D);doc.setFont('helvetica','bold');
+    doc.text(pstr,lx+PAD,pc+pfz*0.13);
+    doc.setFillColor(...G);doc.roundedRect(bx,by,BW,BH,0.8,0.8,'F');
+    doc.setTextColor(...W);doc.setFontSize(6);
+    const tw=doc.getTextWidth('THB');
+    doc.text('THB',bx+(BW-tw)/2,by+BH*0.68);
+    doc.setDrawColor(...DIV);doc.setLineWidth(0.2);
+    doc.line(lx+PAD,py+PH_Z,lx+LW-PAD,py+PH_Z);
+
+    // Barcode zone
+    const bzy=py+PH_Z;
+    if(p.bc&&p.bc.length>=6){
+      const img=getBCImg(p.bc);
+      if(img){
+        doc.addImage(img,'PNG',lx+PAD,bzy+0.5,LW-2*PAD,BCH_Z-2);
+        doc.setTextColor(150,150,150);doc.setFont('helvetica','normal');doc.setFontSize(4.5);
+        doc.text(p.bc,lx+PAD,ly+LH-0.5);
+      }
+    } else {
+      doc.setTextColor(170,170,170);doc.setFont('helvetica','normal');doc.setFontSize(5.5);
+      doc.text('No barcode',lx+PAD,bzy+BCH_Z/2);
+    }
+  }
+
+  pf.style.width='100%';
+  await new Promise(r=>setTimeout(r,150));
+  doc.save(`${FNAME}_${new Date().toISOString().slice(0,10)}.pdf`);
+
+  pw.style.display='none';
+  suc.style.display='flex';
+  btn.disabled=false;btn.textContent='⬇️ Download PDF';
+  setTimeout(()=>suc.style.display='none',4000);
+  toast(`✅ สร้าง ${products.length} labels เสร็จแล้ว!`);
+}
+
+/* ── UTILS ── */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function toast(msg,dur=2800){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ── KEYBOARD SHORTCUTS ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id==='s-price') addSingle();
+  if(e.key==='Enter'&&e.target.id==='s-bc') addSingle();
+});
+
+/* ── INIT ── */
+refresh();
+</script>
+</body>
+</html>

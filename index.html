@@ -287,14 +287,21 @@ canvas{display:none}
             <input id="cfg-s2" value="by Mahasuk Farm" oninput="updatePreview()"/>
           </div>
         </div>
-        <div class="r2">
-          <div class="fg">
-            <label>กว้าง (mm)</label>
-            <input id="cfg-w" type="number" value="70" min="40" max="150"/>
+        <div class="fg">
+          <label>ขนาด Label</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <button class="size-btn on" onclick="setSize(65,35,this)" style="border:2px solid var(--green);background:var(--green-light);border-radius:8px;padding:10px 6px;cursor:pointer;font-family:Sarabun,sans-serif;font-size:0.78rem;font-weight:700;color:var(--green-dark);transition:all .15s">
+              <div style="font-size:1.1rem;margin-bottom:3px">▬</div>
+              แนวนอน<br><span style="font-size:0.7rem;font-weight:400;color:var(--muted)">65 × 35 mm</span>
+            </button>
+            <button class="size-btn" onclick="setSize(35,60,this)" style="border:2px solid var(--border);background:#fff;border-radius:8px;padding:10px 6px;cursor:pointer;font-family:Sarabun,sans-serif;font-size:0.78rem;font-weight:700;color:var(--muted);transition:all .15s">
+              <div style="font-size:1.1rem;margin-bottom:3px">▮</div>
+              แนวตั้ง<br><span style="font-size:0.7rem;font-weight:400">35 × 60 mm</span>
+            </button>
           </div>
-          <div class="fg">
-            <label>สูง (mm)</label>
-            <input id="cfg-h" type="number" value="35" min="20" max="80"/>
+          <div style="display:none">
+            <input id="cfg-w" type="number" value="65"/>
+            <input id="cfg-h" type="number" value="35"/>
           </div>
         </div>
         <div class="fg">
@@ -557,7 +564,7 @@ async function genPDF() {
     const ny=ly+LH_Z;
     doc.setTextColor(...D);doc.setFont('Sarabun','bold');
     const maxW=LW-2*PAD;
-    let fz=7.5;
+    let fz = isPortrait ? 9 : 7.5;
     const words=p.name.split(' ');
     let lines=[],cur='';
     doc.setFontSize(fz);
@@ -580,9 +587,9 @@ async function genPDF() {
     const py=ny+NH_Z;
     const pc=py+PH_Z/2;
     const pstr=p.price.toLocaleString();
-    const BW=13,BH=6;
+    const BW = isPortrait ? 15 : 13, BH = isPortrait ? 8 : 6;
     const bx=lx+LW-PAD-BW,by=pc-BH/2;
-    let pfz=18;
+    let pfz = isPortrait ? 26 : 18;
     doc.setFontSize(pfz);
     while(doc.getTextWidth(pstr)>LW-BW-2*PAD-3&&pfz>11){pfz--;doc.setFontSize(pfz);}
     doc.setTextColor(...D);doc.setFont('Sarabun','bold');
@@ -626,6 +633,23 @@ function toast(msg,dur=2800){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ── SIZE PRESETS ── */
+function setSize(w, h, el) {
+  document.getElementById('cfg-w').value = w;
+  document.getElementById('cfg-h').value = h;
+  document.querySelectorAll('.size-btn').forEach(b => {
+    b.style.border = '2px solid var(--border)';
+    b.style.background = '#fff';
+    b.style.color = 'var(--muted)';
+  });
+  el.style.border = '2px solid var(--green)';
+  el.style.background = 'var(--green-light)';
+  el.style.color = 'var(--green-dark)';
+  // update preview aspect ratio
+  const ratio = w/h;
+  document.querySelector('.prev-wrap').style.aspectRatio = ratio;
 }
 
 /* ── KEYBOARD SHORTCUTS ── */
